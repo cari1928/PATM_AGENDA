@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PATM_AGENDA</string>
+    <string name="strAddEvent">Add Event</string>
+    <string name="strAbout">About</string>
 </resources>
