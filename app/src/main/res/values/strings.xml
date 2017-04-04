@@ -2,4 +2,7 @@
     <string name="app_name">PATM_AGENDA</string>
     <string name="strAddEvent">Add Event</string>
     <string name="strAbout">About</string>
+    <string name="strNombreDev">Santana De Los Ríos Carolina</string>
+    <string name="strCorreoDev">13030622@itcelaya.edu.mx</string>
+    <string name="strTelDev">461-171-4676</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.example.radog.patm_agenda;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
@@ -53,8 +54,11 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.itmAddEvent:
+
                 break;
             case R.id.itmAbout:
+                Intent intAbout = new Intent(this, About.class);
+                startActivity(intAbout);
         }
 
         return super.onOptionsItemSelected(item);
