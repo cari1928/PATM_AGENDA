@@ -198,13 +198,13 @@ public class ListContacts extends AppCompatActivity {
 
     //checa si el contacto ya existe en la BD, de ser así, regresa el ID
     //De no ser así, se inserta
-    private long actionContacts(String name, String phone, String email) {
+    private long actionContacts(String name, String pEmal, String pPhone) {
         long result;
-        List<String> registers = objDBH.selectContact(name, phone, email);
+        List<String> registers = objDBH.selectContact(name, pEmal, pPhone);
         String[] parts;
 
         if (registers == null) {
-            result = objDBH.insertContact(name, email, phone);
+            result = objDBH.insertContact(name, pPhone, pEmal);
             //si falla, result será igual a -1
         } else {
             parts = registers.get(0).split("-");

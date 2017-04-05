@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -33,9 +35,8 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
 
     private ArrayList<itemEvent> arrayItem;
     private ListViewAdapter adapter = null;
-    private ListView lvOptions;
-    private String[] options = {};
-    private AdapterView.AdapterContextMenuInfo info;
+    private CharSequence[] items;
+    String selection;
 
     DBHelper objDBH;
     SQLiteDatabase BD;
@@ -45,9 +46,6 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_events);
         ButterKnife.bind(this);
-
-        lvOptions = new ListView(this);
-
     }
 
     @Override
@@ -99,12 +97,13 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        itemEvent objItem;
+        final AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        itemEvent objItem = arrayItem.get(info.position);
+        AlertDialog alert;
 
         switch (item.getItemId()) {
             case R.id.itmActUpd:
-                objItem = arrayItem.get(info.position);
                 Intent intNewEvent = new Intent(this, UpdateEvent.class);
 
                 Bundle data = new Bundle();
@@ -117,7 +116,6 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
                 break;
 
             case R.id.itmActDel:
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 builder.setMessage("Do you want to delete this event?")
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -153,17 +151,77 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
                             }
                         });
 
-                AlertDialog alert = builder.create();
+                alert = builder.create();
                 alert.setTitle("ALERT!!!");
                 alert.show();
                 break;
 
             case R.id.itmActCall:
+                List<String> contacts = loadContactList(objItem);
+                items = convertListToChar(contacts);
+
+                builder.setTitle("Select contact").setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        selection = (String) items[which]; //GET THE SELECTED ITEM
+                    }
+                }).setPositiveButton("Call", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String[] parts, parts2, parts3;
+                        String number = "";
+
+                        try {
+                            parts = selection.split("/");
+                            if (parts[1].contains("(")) {
+                                parts2 = parts[1].split("\\(");
+                                parts2 = parts2[1].split("\\)");
+                                number += parts2[0];
+                                parts2 = parts2[1].split("-");
+                                number += parts2[0] + parts2[1];
+                                parts = number.split(" ");
+                                number = "";
+                            } else {
+                                parts = parts[1].split(" ");
+                            }
+
+                            for (int i = 0; i < parts.length; ++i) {
+                                number += parts[i];
+                            }
+
+                            //CHECK NUMBER
+                            //Toast.makeText(ListEvents.this, number, Toast.LENGTH_SHORT).show();
+                            Intent objCall = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + number));
+                            startActivity(objCall);
+                        } catch (SecurityException e) {
+                            Toast.makeText(ListEvents.this, e.toString(), Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            Toast.makeText(ListEvents.this, e.toString(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                alert = builder.create();
+                alert.setTitle("Contacts");
+                alert.show();
+
                 break;
             case R.id.itmActSMS:
         }
 
+
+        notifyAdapter(); //para que no haya problema al volver a seleccionar un item
         return super.onContextItemSelected(item);
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Toast.makeText(this, parent.getAdapter().getItem(position).toString(), Toast.LENGTH_SHORT).show();
     }
 
     private void cargarLista() {
@@ -180,8 +238,46 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
         }
     }
 
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Toast.makeText(this, parent.getAdapter().getItem(position).toString(), Toast.LENGTH_SHORT).show();
+    private List<String> loadContactList(itemEvent objItem) {
+        String[] parts;
+        List<String> contacts, final_contacts = new ArrayList<>();
+        //Load contacts list
+
+        objDBH.openDB();
+
+        //GET THE SELECTED EVENT
+        List<String> event = objDBH.selectEvent(objItem.getNameE(), objItem.getDescE(), objItem.getDateE());
+        if (event != null) {
+            contacts = objDBH.selectContacts(Integer.parseInt(event.get(0)));
+            if (contacts != null) {
+                for (String contact : contacts) {
+                    parts = contact.split("/");
+                    arrayItem.add(new itemEvent(R.mipmap.ic_launcher, parts[0], parts[1], parts[2]));
+                    final_contacts.add(parts[0] + " / " + parts[1]);
+                }
+            }
+        }
+        objDBH.closeDB();
+        return final_contacts;
     }
+
+    private CharSequence[] convertListToChar(List<String> contacts) {
+        CharSequence[] items = new CharSequence[contacts.size()];
+        for (int i = 0; i < contacts.size(); ++i) {
+            items[i] = contacts.get(i);
+        }
+
+        return items;
+    }
+
+    private void notifyAdapter() {
+        lvEvents.setAdapter(null);
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+            arrayItem = new ArrayList<>();
+            BD = objDBH.getWritableDatabase(); //open
+            cargarLista();
+        }
+    }
+
 }

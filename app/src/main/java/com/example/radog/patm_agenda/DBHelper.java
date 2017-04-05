@@ -105,7 +105,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return myDB.insert(TABLE_EVENT, null, objCV);
     }
 
-    public long insertContact(String name, String email, String phone) {
+    public long insertContact(String name, String phone, String email) {
         ContentValues objCV = new ContentValues();
 
         objCV.put(NAME_CONTACT, name);
@@ -192,7 +192,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 "WHERE idEvent=" + idEvent, null);
         if (c.moveToFirst()) {
             do {
-                registers.add(c.getString(1) + "-" + c.getString(2) + "-" + c.getString(3));
+                registers.add(c.getString(1) + "/" + c.getString(2) + "/" + c.getString(3));
             } while (c.moveToNext());
         } else {
             return null;

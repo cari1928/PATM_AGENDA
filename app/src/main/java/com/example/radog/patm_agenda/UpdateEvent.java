@@ -176,7 +176,7 @@ public class UpdateEvent extends AppCompatActivity {
             contacts = objDBH.selectContacts(Integer.parseInt(event.get(0)));
             if (contacts != null) {
                 for (String contact : contacts) {
-                    parts = contact.split("-");
+                    parts = contact.split("/");
                     arrayItem.add(new itemEvent(R.mipmap.ic_launcher, parts[0], parts[1], parts[2]));
                 }
                 adapter = new ListViewAdapter(this, arrayItem);
