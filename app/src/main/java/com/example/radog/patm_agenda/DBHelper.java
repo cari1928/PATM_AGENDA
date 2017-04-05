@@ -147,9 +147,26 @@ public class DBHelper extends SQLiteOpenHelper {
         return 0;
     }
 
-    public long selectPeople(int idEvent, int idContact) {
-        //TODO
-        return 0;
+    public List<String> selectPeople(int idEvent, int idContact) {
+        List<String> registers = new ArrayList<>();
+
+        Cursor c = myDB.rawQuery("SELECT * FROM " + TABLE_PEOPLE +
+                " WHERE " + ID_EVENT + "=" + idEvent +
+                " AND " + idContact + "=" + idContact, null);
+        if (c.moveToFirst()) {
+            do {
+                registers.add(c.getString(0));
+            } while (c.moveToNext());
+        } else {
+            return null;
+        }
+
+        return registers;
+    }
+
+    public long deletePeople(int idEvent) {
+        String where = ID_EVENT + "=" + idEvent;
+        return myDB.delete(TABLE_PEOPLE, where, null);
     }
 
     public List<String> selectContact(String name, String phone, String email) {

@@ -1,11 +1,9 @@
 package com.example.radog.patm_agenda;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,6 +28,7 @@ public class ListContacts extends AppCompatActivity {
     private ArrayList<String> list = new ArrayList<>();
     private ArrayList<String> list_items = new ArrayList<>();
     private String nameE, desc, date, time, source;
+    private int idEvent;
 
     DBHelper objDBH;
 
@@ -50,6 +49,10 @@ public class ListContacts extends AppCompatActivity {
         desc = data.getString("DESC");
         date = data.getString("DATE");
         time = data.getString("TIME");
+
+        if (source.equals("UPDATE")) {
+            idEvent = data.getInt("ID");
+        }
 
         loadContacts();
     }
@@ -112,7 +115,7 @@ public class ListContacts extends AppCompatActivity {
                 if (!list_items.contains(list.get(position))) {
                     list_items.add(list.get(position));
                 }
-                mode.setTitle(list_items.size() + " contacts selected");
+                mode.setTitle(list_items.size() + " actionContacts selected");
             }
 
             @Override
@@ -130,42 +133,44 @@ public class ListContacts extends AppCompatActivity {
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 long result;
-                int idEvent, idContact;
+                int idContact;
                 String[] parts;
+                List<String> people;
 
                 switch (item.getItemId()) {
                     case R.id.miAddContacts:
 
-                        //INSERT EVENT
-                        result = objDBH.insertEvent(nameE, desc, date + " " + time);
+                        //INSERT | UPDATE EVENT
+                        result = actionEvents();
                         insertMessage(result);
                         if (result == -1) {
                             return false;
                         }
-                        idEvent = (int) result;
+
+                        result = actionPeople();
+                        if (result == -1) {
+                            return false;
+                        }
 
                         for (String msg : list_items) {
                             parts = msg.split("/");
 
-                            //INSERT CONTACT
-                            result = contacts(parts[0], parts[1], parts[2]);
+                            //INSERT CONTACT, IF IT'S NECESSARY
+                            result = actionContacts(parts[0], parts[1], parts[2]);
                             insertMessage(result);
                             if (result == -1) {
                                 return false;
                             }
                             idContact = (int) result;
 
-                            if (source.equals("INSERT")) {
-                                //INSERT PEOPLE
-                                result = objDBH.insertPeople(idEvent, idContact);
-                                insertMessage(result);
-                                if (result == -1) {
-                                    return false;
-                                }
-                            } else {
-                                //UPDATE PEOPLE
-
+                            //INSERT PEOPLE
+                            //THERE'S NO PROBLEM WITH UPDATE, OLD PEOPLE HAS BEEN DELETED
+                            result = objDBH.insertPeople(idEvent, idContact);
+                            insertMessage(result);
+                            if (result == -1) {
+                                return false;
                             }
+
                         }
                         Toast.makeText(ListContacts.this, "Information Saved", Toast.LENGTH_SHORT).show();
                         list_items = new ArrayList<String>();
@@ -193,7 +198,7 @@ public class ListContacts extends AppCompatActivity {
 
     //checa si el contacto ya existe en la BD, de ser así, regresa el ID
     //De no ser así, se inserta
-    private long contacts(String name, String phone, String email) {
+    private long actionContacts(String name, String phone, String email) {
         long result;
         List<String> registers = objDBH.selectContact(name, phone, email);
         String[] parts;
@@ -207,5 +212,33 @@ public class ListContacts extends AppCompatActivity {
         }
 
         return result;
+    }
+
+    private long actionEvents() {
+        long result;
+        if (source.equals("NEW")) {
+            //INSERT EVENT
+            result = objDBH.insertEvent(nameE, desc, date + " " + time);
+            idEvent = (int) result;
+        } else {
+            //UPDATE
+            //idEvent ya fue colocado previamente en onCreate
+            result = objDBH.updateEvent(idEvent, nameE, desc, date + " " + time);
+        }
+
+        return result;
+    }
+
+    private long actionPeople() {
+        List<String> people;
+        long result;
+
+        if (source.equals("UPDATE")) {
+            //DELETE EXISTING PEOPLE
+            return result = objDBH.deletePeople(idEvent); //elimina todos los contactos de ése evento
+        } else {
+            //CASE NEW
+            return 1;
+        }
     }
 }

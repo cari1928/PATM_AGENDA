@@ -39,7 +39,7 @@ public class UpdateEvent extends AppCompatActivity {
     private ListViewAdapter adapter = null;
     ListView lvContacts;
     private String nameE, descE, dateE, timeE;
-    private int day, month, year, hour, minute;
+    private int day, month, year, hour, minute, idEvent;
 
     private DBHelper objDBH;
 
@@ -103,12 +103,11 @@ public class UpdateEvent extends AppCompatActivity {
     @OnClick(R.id.btnSave)
     public void btnSave() {
         long result;
-        List<String> events;
         String[] editTexts = getInfoEditText();
 
-        events = objDBH.selectEvent(nameE, descE, dateE + " " + timeE);
-        if (events != null) {
-            result = objDBH.updateEvent(Integer.parseInt(events.get(0)), editTexts[0], editTexts[1], editTexts[2] + " " + editTexts[3]);
+        setIdEvent();
+        if (idEvent != -1) {
+            result = objDBH.updateEvent(idEvent, editTexts[0], editTexts[1], editTexts[2] + " " + editTexts[3]);
             if (result != -1) {
                 Toast.makeText(this, "Successfuly Updated", Toast.LENGTH_LONG).show();
             } else {
@@ -123,12 +122,7 @@ public class UpdateEvent extends AppCompatActivity {
         Intent intContacts = new Intent(this, ListContacts.class);
         Bundle data = new Bundle();
         String[] editTexts = getInfoEditText();
-
-        /*String name = etNameE.getText().toString();
-        String desc = etDescE.getText().toString();
-        String date = etDateE.getText().toString();
-        String time = etTimeE.getText().toString();*/
-
+        setIdEvent();
 
         //TODO
         //DESCOMENTAR ESTO PARA LA VERSIÓN FINAL!!!!
@@ -137,6 +131,7 @@ public class UpdateEvent extends AppCompatActivity {
         //} else {
         //SEND DATA
         data.putString("SOURCE", "UPDATE");
+        data.putInt("ID", idEvent);
         data.putString("NAME", editTexts[0]);
         data.putString("DESC", editTexts[1]);
         data.putString("DATE", editTexts[2]);
@@ -213,5 +208,14 @@ public class UpdateEvent extends AppCompatActivity {
         editTexts[3] = etTimeE.getText().toString();
 
         return editTexts;
+    }
+
+    private void setIdEvent() {
+        List<String> events = objDBH.selectEvent(nameE, descE, dateE + " " + timeE);
+        if (events != null) {
+            idEvent = Integer.parseInt(events.get(0));
+        } else {
+            idEvent = -1;
+        }
     }
 }
