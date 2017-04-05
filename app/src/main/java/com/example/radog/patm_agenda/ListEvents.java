@@ -1,8 +1,10 @@
 package com.example.radog.patm_agenda;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -19,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,9 +31,11 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
     @BindView(R.id.lvEvents)
     ListView lvEvents;
 
-
     private ArrayList<itemEvent> arrayItem;
     private ListViewAdapter adapter = null;
+    private ListView lvOptions;
+    private String[] options = {};
+    private AdapterView.AdapterContextMenuInfo info;
 
     DBHelper objDBH;
     SQLiteDatabase BD;
@@ -40,6 +45,9 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_events);
         ButterKnife.bind(this);
+
+        lvOptions = new ListView(this);
+
     }
 
     @Override
@@ -91,7 +99,7 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         itemEvent objItem;
 
         switch (item.getItemId()) {
@@ -107,8 +115,49 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
 
                 startActivity(intNewEvent);
                 break;
+
             case R.id.itmActDel:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("Do you want to delete this event?")
+                        .setCancelable(false)
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                long result;
+                                itemEvent objItem;
+                                List<String> event;
+                                objDBH = new DBHelper(ListEvents.this, "CURSO", null, 1);
+                                objDBH.openDB();
+
+                                objItem = arrayItem.get(info.position);
+                                event = objDBH.selectEvent(objItem.getNameE(), objItem.getDescE(), objItem.getDateE());
+                                if (event != null) {
+                                    //DELETE PEOPLE
+                                    result = objDBH.deletePeople(Integer.parseInt(event.get(0)));
+                                    if (result != -1) {
+                                        //DELETE EVENT
+                                        result = objDBH.deleteEvent(Integer.parseInt(event.get(0)));
+                                        if (result != -1) {
+                                            objDBH.closeDB();
+                                            Toast.makeText(ListEvents.this, "Event successfuly deleted", Toast.LENGTH_SHORT).show();
+                                            onStart();
+                                        }
+                                    }
+                                }
+                            }
+                        })
+                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        });
+
+                AlertDialog alert = builder.create();
+                alert.setTitle("ALERT!!!");
+                alert.show();
                 break;
+
             case R.id.itmActCall:
                 break;
             case R.id.itmActSMS:

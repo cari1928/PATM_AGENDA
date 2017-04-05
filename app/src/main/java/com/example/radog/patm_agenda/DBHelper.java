@@ -142,11 +142,6 @@ public class DBHelper extends SQLiteOpenHelper {
         return myDB.update(TABLE_EVENT, objCV, where, null);
     }
 
-    public long updatePeople(int idPeople) {
-        //TODO
-        return 0;
-    }
-
     public List<String> selectPeople(int idEvent, int idContact) {
         List<String> registers = new ArrayList<>();
 
@@ -167,6 +162,11 @@ public class DBHelper extends SQLiteOpenHelper {
     public long deletePeople(int idEvent) {
         String where = ID_EVENT + "=" + idEvent;
         return myDB.delete(TABLE_PEOPLE, where, null);
+    }
+
+    public long deleteEvent(int idEvent) {
+        String where = ID_EVENT + "=" + idEvent;
+        return myDB.delete(TABLE_EVENT, where, null);
     }
 
     public List<String> selectContact(String name, String phone, String email) {
