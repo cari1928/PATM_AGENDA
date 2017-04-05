@@ -6,11 +6,13 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -19,13 +21,13 @@ import butterknife.OnClick;
 public class NewEvent extends AppCompatActivity {
 
     @BindView(R.id.etNameE)
-    TextView etNameE;
+    EditText etNameE;
     @BindView(R.id.etDescE)
-    TextView etDescE;
+    EditText etDescE;
     @BindView(R.id.etDateE)
-    TextView etDateE;
+    EditText etDateE;
     @BindView(R.id.etTimeE)
-    TextView etTimeE;
+    EditText etTimeE;
 
     private int day, month, year, hour, minute;
 
@@ -34,6 +36,7 @@ public class NewEvent extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_event);
         ButterKnife.bind(this);
+
     }
 
     @OnClick(R.id.btnDate)
@@ -79,10 +82,13 @@ public class NewEvent extends AppCompatActivity {
         String date = etDateE.getText().toString();
         String time = etTimeE.getText().toString();
 
+
+        //DESCOMENTAR ESTO PARA LA VERSIÓN FINAL!!!!
         //if (name.equals("") || desc.equals("") || date.equals("") || time.equals("")) {
         //  Toast.makeText(this, "Ingrese los datos solicitados", Toast.LENGTH_LONG).show();
         //} else {
         //SEND DATA
+        data.putString("SOURCE", "NEW");
         data.putString("NAME", name);
         data.putString("DESC", desc);
         data.putString("DATE", date);
@@ -93,5 +99,6 @@ public class NewEvent extends AppCompatActivity {
         finish();
         // }
     }
+
 
 }

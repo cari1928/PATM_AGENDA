@@ -16,6 +16,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,7 +29,7 @@ public class ListContacts extends AppCompatActivity {
     private ArrayAdapter<String> adapter;
     private ArrayList<String> list = new ArrayList<>();
     private ArrayList<String> list_items = new ArrayList<>();
-    private String nameE, desc, date, time;
+    private String nameE, desc, date, time, source;
 
     DBHelper objDBH;
 
@@ -43,11 +44,12 @@ public class ListContacts extends AppCompatActivity {
         objDBH.openDB();
 
         //INTENT DATA
-        Bundle datos = getIntent().getExtras();
-        nameE = datos.getString("NAME");
-        desc = datos.getString("DESC");
-        date = datos.getString("DATE");
-        time = datos.getString("TIME");
+        Bundle data = getIntent().getExtras();
+        source = data.getString("SOURCE");
+        nameE = data.getString("NAME");
+        desc = data.getString("DESC");
+        date = data.getString("DATE");
+        time = data.getString("TIME");
 
         loadContacts();
     }
@@ -86,7 +88,7 @@ public class ListContacts extends AppCompatActivity {
                 }
 
                 //alContacts.add(id + " " + name + " " + email + " " + contactNumber);
-                alContacts.add(name + " - " + email + " - " + contactNumber);
+                alContacts.add(name + " / " + email + " / " + contactNumber);
                 name = email = contactNumber = id = "Desconocido";
 
             } while (cursor.moveToNext());
@@ -143,21 +145,26 @@ public class ListContacts extends AppCompatActivity {
                         idEvent = (int) result;
 
                         for (String msg : list_items) {
-                            parts = msg.split("-");
+                            parts = msg.split("/");
 
                             //INSERT CONTACT
-                            result = objDBH.insertContact(parts[0], parts[1], parts[2]);
+                            result = contacts(parts[0], parts[1], parts[2]);
                             insertMessage(result);
                             if (result == -1) {
                                 return false;
                             }
                             idContact = (int) result;
 
-                            //INSERT PEOPLE
-                            result = objDBH.insertPeople(idEvent, idContact);
-                            insertMessage(result);
-                            if (result == -1) {
-                                return false;
+                            if (source.equals("INSERT")) {
+                                //INSERT PEOPLE
+                                result = objDBH.insertPeople(idEvent, idContact);
+                                insertMessage(result);
+                                if (result == -1) {
+                                    return false;
+                                }
+                            } else {
+                                //UPDATE PEOPLE
+
                             }
                         }
                         Toast.makeText(ListContacts.this, "Information Saved", Toast.LENGTH_SHORT).show();
@@ -182,5 +189,23 @@ public class ListContacts extends AppCompatActivity {
             Toast.makeText(ListContacts.this, "Some error ocurred while inserting", Toast.LENGTH_SHORT).show();
             finish();
         }
+    }
+
+    //checa si el contacto ya existe en la BD, de ser así, regresa el ID
+    //De no ser así, se inserta
+    private long contacts(String name, String phone, String email) {
+        long result;
+        List<String> registers = objDBH.selectContact(name, phone, email);
+        String[] parts;
+
+        if (registers == null) {
+            result = objDBH.insertContact(name, email, phone);
+            //si falla, result será igual a -1
+        } else {
+            parts = registers.get(0).split("-");
+            return Long.parseLong(parts[0]); //regresa el id del registro ya existente
+        }
+
+        return result;
     }
 }

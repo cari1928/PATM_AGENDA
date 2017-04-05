@@ -5,9 +5,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -24,6 +27,7 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
 
     @BindView(R.id.lvEvents)
     ListView lvEvents;
+
 
     private ArrayList<itemEvent> arrayItem;
     private ListViewAdapter adapter = null;
@@ -48,6 +52,8 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
 
         arrayItem = new ArrayList<>();
         cargarLista();
+
+        registerForContextMenu(lvEvents);
     }
 
     @Override
@@ -69,6 +75,46 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        int id = v.getId();
+        MenuInflater inflater = getMenuInflater();
+
+        switch (id) {
+            case R.id.lvEvents:
+                inflater.inflate(R.menu.menu_events, menu);
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        itemEvent objItem;
+
+        switch (item.getItemId()) {
+            case R.id.itmActUpd:
+                objItem = arrayItem.get(info.position);
+                Intent intNewEvent = new Intent(this, UpdateEvent.class);
+
+                Bundle data = new Bundle();
+                data.putString("NAME", objItem.getNameE());
+                data.putString("DESC", objItem.getDescE());
+                data.putString("DATE", objItem.getDateE());
+                intNewEvent.putExtras(data);
+
+                startActivity(intNewEvent);
+                break;
+            case R.id.itmActDel:
+                break;
+            case R.id.itmActCall:
+                break;
+            case R.id.itmActSMS:
+        }
+
+        return super.onContextItemSelected(item);
     }
 
     private void cargarLista() {

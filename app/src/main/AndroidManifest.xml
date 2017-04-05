@@ -3,7 +3,7 @@
     package="com.example.radog.patm_agenda">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
         android:allowBackup="true"
@@ -21,8 +21,9 @@
             </intent-filter>
         </activity>
         <activity android:name=".About" />
-        <activity android:name=".NewEvent"></activity>
-        <activity android:name=".ListContacts"></activity>
+        <activity android:name=".NewEvent" />
+        <activity android:name=".ListContacts" />
+        <activity android:name=".UpdateEvent"></activity>
     </application>
 
 </manifest>

@@ -7,7 +7,7 @@ package com.example.radog.patm_agenda;
 public class itemEvent {
 
     private int picture;
-    String nameE, descE, dateE;
+    private String nameE, descE, dateE;
 
     public itemEvent(int picture, String nameE, String descE, String dateE) {
         this.picture = picture;

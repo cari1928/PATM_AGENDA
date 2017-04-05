@@ -2,8 +2,13 @@ package com.example.radog.patm_agenda;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by radog on 03/04/2017.
@@ -123,4 +128,78 @@ public class DBHelper extends SQLiteOpenHelper {
 
         return result;
     }
+
+    public long updateEvent(int idEvent, String name, String desc, String date) {
+        ContentValues objCV = new ContentValues();
+        String where;
+
+        objCV.put(NAME_EVENT, name);
+        objCV.put(DESCRIPTION_EVENT, desc);
+        objCV.put(DATE_EVENT, date);
+
+        where = ID_EVENT + "=" + idEvent;
+
+        return myDB.update(TABLE_EVENT, objCV, where, null);
+    }
+
+    public long updatePeople(int idPeople) {
+        //TODO
+        return 0;
+    }
+
+    public long selectPeople(int idEvent, int idContact) {
+        //TODO
+        return 0;
+    }
+
+    public List<String> selectContact(String name, String phone, String email) {
+        List<String> registers = new ArrayList<>();
+
+        Cursor c = myDB.rawQuery("SELECT * FROM contact WHERE nameC='" + name + "' AND phone='" + phone + "' AND email='" + email + "'", null);
+        if (c.moveToFirst()) {
+            do {
+                registers.add(c.getString(0) + "-" + c.getString(1) + "-" + c.getString(2) + "-" + c.getString(3));
+            } while (c.moveToNext());
+        } else {
+            return null;
+        }
+
+        return registers;
+    }
+
+    public List<String> selectContacts(int idEvent) {
+        List<String> registers = new ArrayList<>();
+
+        Cursor c = myDB.rawQuery("SELECT * FROM contact " +
+                "INNER JOIN people ON contact.idContact = people.idContact " +
+                "WHERE idEvent=" + idEvent, null);
+        if (c.moveToFirst()) {
+            do {
+                registers.add(c.getString(1) + "-" + c.getString(2) + "-" + c.getString(3));
+            } while (c.moveToNext());
+        } else {
+            return null;
+        }
+
+        return registers;
+    }
+
+    public List<String> selectEvent(String name, String desc, String date) {
+        List<String> registers = new ArrayList<>();
+
+        Cursor c = myDB.rawQuery("SELECT * FROM event " +
+                "WHERE " + NAME_EVENT + "='" + name + "' " +
+                "AND " + DESCRIPTION_EVENT + "='" + desc + "' " +
+                "AND " + DATE_EVENT + "='" + date + "'", null);
+        if (c.moveToFirst()) {
+            do {
+                registers.add(c.getString(0));
+            } while (c.moveToNext());
+        } else {
+            return null;
+        }
+
+        return registers;
+    }
+
 }

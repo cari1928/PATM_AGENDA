@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <item
+        android:id="@+id/itmActUpd"
+        android:title="@string/action_update"></item>
+
+    <item
+        android:id="@+id/itmActDel"
+        android:title="@string/action_delete"></item>
+    <item
+        android:id="@+id/itmActCall"
+        android:title="@string/action_call"></item>
+    <item
+        android:id="@+id/itmActSMS"
+        android:title="@string/action_sms"></item>
+
 </menu>
