@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.telephony.SmsManager;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -17,6 +18,8 @@ import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -36,7 +39,7 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
     private ArrayList<itemEvent> arrayItem;
     private ListViewAdapter adapter = null;
     private CharSequence[] items;
-    String selection;
+    String selection, number;
 
     DBHelper objDBH;
     SQLiteDatabase BD;
@@ -98,9 +101,10 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         final AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         itemEvent objItem = arrayItem.get(info.position);
         AlertDialog alert;
+        List<String> contacts;
 
         switch (item.getItemId()) {
             case R.id.itmActUpd:
@@ -157,7 +161,7 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
                 break;
 
             case R.id.itmActCall:
-                List<String> contacts = loadContactList(objItem);
+                contacts = loadContactList(objItem);
                 items = convertListToChar(contacts);
 
                 builder.setTitle("Select contact").setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
@@ -212,8 +216,82 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
 
                 break;
             case R.id.itmActSMS:
-        }
+                contacts = loadContactList(objItem);
+                items = convertListToChar(contacts);
 
+                builder.setTitle("Select contact").setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        selection = (String) items[which]; //GET THE SELECTED ITEM
+                    }
+                }).setPositiveButton("Send SMS", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(final DialogInterface dialog, int which) {
+                        String[] parts, parts2, parts3;
+                        number = "";
+
+                        try {
+                            parts = selection.split("/");
+                            if (parts[1].contains("(")) {
+                                parts2 = parts[1].split("\\(");
+                                parts2 = parts2[1].split("\\)");
+                                number += parts2[0];
+                                parts2 = parts2[1].split("-");
+                                number += parts2[0] + parts2[1];
+                                parts = number.split(" ");
+                                number = "";
+                            } else {
+                                parts = parts[1].split(" ");
+                            }
+
+                            for (int i = 0; i < parts.length; ++i) {
+                                number += parts[i];
+                            }
+
+                            final AlertDialog.Builder builder2 = new AlertDialog.Builder(ListEvents.this);
+                            View view = getLayoutInflater().inflate(R.layout.dialog_sms, null);
+                            final EditText etMessage = (EditText) view.findViewById(R.id.etMessage);
+                            Button btnSend = (Button) view.findViewById(R.id.btnSend);
+
+                            builder2.setView(view);
+                            final AlertDialog dialogMessage = builder2.create();
+
+                            btnSend.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    String message = etMessage.getText().toString();
+                                    if (!message.isEmpty()) {
+                                        //CHECK NUMBER
+                                        //Toast.makeText(ListEvents.this, number, Toast.LENGTH_SHORT).show();
+                                        SmsManager objSMS = SmsManager.getDefault(); //obtener el manejador por default del manejador que trae el telefono;
+                                        objSMS.sendTextMessage(number, null, message, null, null);
+                                        Toast.makeText(ListEvents.this, "Message Send", Toast.LENGTH_SHORT).show();
+                                        dialogMessage.dismiss();
+                                    } else {
+                                        Toast.makeText(ListEvents.this, "You have to write something", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+
+                            dialogMessage.show();
+
+                        } catch (SecurityException e) {
+                            Toast.makeText(ListEvents.this, e.toString(), Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            Toast.makeText(ListEvents.this, e.toString(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                });
+
+                alert = builder.create();
+                alert.setTitle("Contacts");
+                alert.show();
+        }
 
         notifyAdapter(); //para que no haya problema al volver a seleccionar un item
         return super.onContextItemSelected(item);
