@@ -1,5 +1,6 @@
 package com.example.radog.patm_agenda;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -77,5 +78,49 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
+    }
+
+    public void openDB() {
+        myDB = getWritableDatabase();
+    }
+
+    public void closeDB() {
+        if (myDB != null && myDB.isOpen()) {
+            myDB.close();
+        }
+    }
+
+    public long insertEvent(String name, String desc, String date) {
+        ContentValues objCV = new ContentValues();
+
+        objCV.put(NAME_EVENT, name);
+        objCV.put(DESCRIPTION_EVENT, desc);
+        objCV.put(DATE_EVENT, date);
+
+        return myDB.insert(TABLE_EVENT, null, objCV);
+    }
+
+    public long insertContact(String name, String email, String phone) {
+        ContentValues objCV = new ContentValues();
+
+        objCV.put(NAME_CONTACT, name);
+        objCV.put(EMAIL_CONTACT, email);
+        objCV.put(PHONE_CONTACT, phone);
+
+        return myDB.insert(TABLE_CONTACT, null, objCV);
+    }
+
+    public long insertPeople(int idEvent, int idContact) {
+        long result;
+        ContentValues objCV = new ContentValues();
+
+        objCV.put(ID_EVENT, idEvent);
+        objCV.put(ID_CONTACT, idContact);
+
+        myDB.execSQL("PRAGMA foreign_keys=ON;");
+        result = myDB.insert(TABLE_PEOPLE, null, objCV);
+        myDB.execSQL("PRAGMA foreign_keys=OFF;");
+
+        return result;
     }
 }

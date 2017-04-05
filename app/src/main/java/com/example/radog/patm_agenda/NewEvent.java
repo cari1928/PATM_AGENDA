@@ -2,11 +2,13 @@ package com.example.radog.patm_agenda;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.util.Calendar;
 
@@ -66,4 +68,30 @@ public class NewEvent extends AppCompatActivity {
         }, hour, minute, false);
         timePickerDialog.show();
     }
+
+    @OnClick(R.id.btnContacts)
+    public void btnContacts() {
+        Intent intContacts = new Intent(this, ListContacts.class);
+        Bundle data = new Bundle();
+
+        String name = etNameE.getText().toString();
+        String desc = etDescE.getText().toString();
+        String date = etDateE.getText().toString();
+        String time = etTimeE.getText().toString();
+
+        //if (name.equals("") || desc.equals("") || date.equals("") || time.equals("")) {
+        //  Toast.makeText(this, "Ingrese los datos solicitados", Toast.LENGTH_LONG).show();
+        //} else {
+        //SEND DATA
+        data.putString("NAME", name);
+        data.putString("DESC", desc);
+        data.putString("DATE", date);
+        data.putString("TIME", time);
+
+        intContacts.putExtras(data);
+        startActivity(intContacts);
+        finish();
+        // }
+    }
+
 }

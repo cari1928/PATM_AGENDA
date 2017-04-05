@@ -36,7 +36,13 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_events);
         ButterKnife.bind(this);
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        //para que se refresque la vista cuando volvemos a esta Activity
         objDBH = new DBHelper(this, "CURSO", null, 1);
         BD = objDBH.getWritableDatabase(); //open
 
@@ -54,7 +60,8 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.itmAddEvent:
-
+                Intent intNewEvent = new Intent(this, NewEvent.class);
+                startActivity(intNewEvent);
                 break;
             case R.id.itmAbout:
                 Intent intAbout = new Intent(this, About.class);
@@ -65,10 +72,7 @@ public class ListEvents extends AppCompatActivity implements AdapterView.OnItemC
     }
 
     private void cargarLista() {
-        Cursor c;
-        c = BD.rawQuery("SELECT * FROM event ORDER BY nameE", null);
-
-        //CHECAR COMO HACER CICLO!!!
+        Cursor c = BD.rawQuery("SELECT * FROM event ORDER BY nameE", null);
         if (c.moveToFirst()) {
             do {
                 arrayItem.add(new itemEvent(R.mipmap.ic_launcher, c.getString(1), c.getString(2), c.getString(3)));
